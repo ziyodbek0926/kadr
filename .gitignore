@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Muhit va sirlar — HECH QACHON commit qilinmaydi
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Backend runtime
+backend/uploads/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Desktop (Tauri)
+desktop/src-tauri/target/
+desktop/node_modules/
+desktop/dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Loglar
+*.log
