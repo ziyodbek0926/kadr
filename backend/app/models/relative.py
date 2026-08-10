@@ -27,6 +27,8 @@ class Relative(Base):
     )
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     birth_year: Mapped[int | None] = mapped_column(Integer)
+    # Haqiqiy МАЪЛУМОТНОМА shablonida "Туғилган йили ва жойи" bitta ustun — birth_year bilan birga
+    birth_place: Mapped[str | None] = mapped_column(String(255))
     workplace: Mapped[str | None] = mapped_column(String(255))
     position_title: Mapped[str | None] = mapped_column(String(255))
     address: Mapped[str | None] = mapped_column(String(500))

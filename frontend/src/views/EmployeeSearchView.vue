@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { downloadObjektivka, searchEmployees } from '@/api/employees'
+import { downloadObjektivka, exportEmployeesToExcel, searchEmployees } from '@/api/employees'
+import { EMPLOYMENT_STATUS_LABELS } from '@/constants/labels'
 import type { EmployeeSearchFilter, EmployeeSearchResult } from '@/types/employee'
 import { reactive, ref } from 'vue'
 
@@ -25,7 +26,12 @@ runSearch()
 
 <template>
   <div class="mx-auto max-w-6xl p-6">
-    <h1 class="mb-4 text-2xl font-semibold text-slate-800">Xodimlarni qidirish</h1>
+    <div class="mb-4 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold text-slate-800">Xodimlarni qidirish</h1>
+      <RouterLink :to="{ name: 'employee-create' }" class="rounded bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">
+        + Yangi xodim
+      </RouterLink>
+    </div>
 
     <!-- Bu — Advanced Search'ning ilyustrativ namunasi: 3 ta filtr ko'rsatilgan, backend
     EmployeeSearchFilter esa 14 tagacha parametrni qo'llab-quvvatlaydi (app/schemas/search.py).
@@ -59,9 +65,16 @@ runSearch()
         />
       </div>
 
-      <div class="sm:col-span-3">
+      <div class="flex items-end gap-3 sm:col-span-3">
         <button type="submit" class="rounded bg-slate-800 px-4 py-2 text-white hover:bg-slate-700">
           Qidirish
+        </button>
+        <button
+          type="button"
+          class="rounded border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50"
+          @click="exportEmployeesToExcel(filters)"
+        >
+          Excel'ga eksport
         </button>
       </div>
     </form>
@@ -80,9 +93,13 @@ runSearch()
       </thead>
       <tbody>
         <tr v-for="item in result.items" :key="item.id" class="border-b text-sm">
-          <td class="p-3">{{ item.full_name }}</td>
+          <td class="p-3">
+            <RouterLink :to="{ name: 'employee-detail', params: { id: item.id } }" class="text-blue-600 hover:underline">
+              {{ item.full_name }}
+            </RouterLink>
+          </td>
           <td class="p-3">{{ item.position?.title ?? '—' }}</td>
-          <td class="p-3">{{ item.employment_status }}</td>
+          <td class="p-3">{{ EMPLOYMENT_STATUS_LABELS[item.employment_status] }}</td>
           <td class="p-3">{{ item.specialization_area ?? '—' }}</td>
           <td class="p-3">
             <button class="text-blue-600 hover:underline" @click="downloadObjektivka(item.id, item.full_name)">

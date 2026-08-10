@@ -11,6 +11,19 @@ const router = createRouter({
       component: () => import('@/views/EmployeeSearchView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/employees/new',
+      name: 'employee-create',
+      component: () => import('@/views/EmployeeCreateView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/employees/:id',
+      name: 'employee-detail',
+      component: () => import('@/views/EmployeeDetailView.vue'),
+      meta: { requiresAuth: true },
+      props: true,
+    },
   ],
 })
 

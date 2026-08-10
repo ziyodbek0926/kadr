@@ -55,6 +55,16 @@ class Employee(TimestampMixin, SoftDeleteMixin, Base):
         Enum(MaritalStatus, native_enum=False, length=20)
     )
 
+    # Quyidagi 5 ta maydon — ishxonaning haqiqiy МАЪЛУМОТНОМА (obyektivka) shablonida
+    # majburiy bo'lgan, lekin dastlabki sxemada yo'q edi. Aksariyat xodimlar uchun bo'sh/"Йўқ"
+    # qoladi, shu sababli barchasi ixtiyoriy (nullable).
+    academic_degree: Mapped[str | None] = mapped_column(String(150))  # Ilmiy darajasi (masalan f.f.n., PhD)
+    academic_title: Mapped[str | None] = mapped_column(String(150))  # Ilmiy unvoni (masalan dotsent, professor)
+    foreign_languages: Mapped[str | None] = mapped_column(String(255))  # Qaysi chet tillarini biladi
+    military_rank: Mapped[str | None] = mapped_column(String(150))  # Harbiy (maxsus) unvon
+    party_affiliation: Mapped[str | None] = mapped_column(String(150))  # Partiyaviyligi
+    public_office_note: Mapped[str | None] = mapped_column(Text)  # Xalq deputatlari kengashi a'zoligi va h.k.
+
     pinfl_encrypted: Mapped[str | None] = mapped_column(String(512))
     pinfl_hash: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
     passport_series: Mapped[str | None] = mapped_column(String(4))

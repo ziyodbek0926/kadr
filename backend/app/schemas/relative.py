@@ -9,6 +9,7 @@ class RelativeBase(BaseModel):
     relation_type: RelativeType
     full_name: str = Field(min_length=2, max_length=255)
     birth_year: int | None = Field(default=None, ge=1900)
+    birth_place: str | None = Field(default=None, max_length=255)
     workplace: str | None = Field(default=None, max_length=255)
     position_title: str | None = Field(default=None, max_length=255)
     address: str | None = Field(default=None, max_length=500)
@@ -29,6 +30,7 @@ class RelativeUpdate(BaseModel):
     relation_type: RelativeType | None = None
     full_name: str | None = Field(default=None, min_length=2, max_length=255)
     birth_year: int | None = Field(default=None, ge=1900)
+    birth_place: str | None = Field(default=None, max_length=255)
     workplace: str | None = Field(default=None, max_length=255)
     position_title: str | None = Field(default=None, max_length=255)
     address: str | None = Field(default=None, max_length=500)

@@ -9,6 +9,13 @@ select = ["E", "F", "I", "UP", "B", "C4", "RUF", "DTZ"]
 # har doim eng so'nggisi bo'lishiga kafolat yo'q (portativlik moslashuvchanlikdan ustun).
 ignore = ["UP046", "UP047"]
 
+[tool.ruff.lint.per-file-ignores]
+# RUF001: bu fayllar ataylab tashkilotning haqiqiy МАЪЛУМОТНОМА shabloniga mos kirill
+# yozuvidagi matnni o'z ichiga oladi — bu identifikator emas, hujjat mazmuni, shuning
+# uchun lotin-kirill "o'xshash harflar" ogohlantirishi bu yerda amal qilmaydi.
+"app/services/docx_generator.py" = ["RUF001"]
+"tests/test_docx_generator.py" = ["RUF001"]
+
 [tool.mypy]
 python_version = "3.12"
 plugins = ["pydantic.mypy"]

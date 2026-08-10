@@ -30,6 +30,13 @@ class EmployeeBase(BaseModel):
     citizenship: str | None = Field(default="O'zbekiston Respublikasi", max_length=100)
     marital_status: MaritalStatus | None = None
 
+    academic_degree: str | None = Field(default=None, max_length=150)
+    academic_title: str | None = Field(default=None, max_length=150)
+    foreign_languages: str | None = Field(default=None, max_length=255)
+    military_rank: str | None = Field(default=None, max_length=150)
+    party_affiliation: str | None = Field(default=None, max_length=150)
+    public_office_note: str | None = None
+
     pinfl: str | None = Field(default=None, pattern=PINFL_PATTERN, description="14 xonali JSHSHIR")
     passport_series: str | None = Field(default=None, pattern=PASSPORT_SERIES_PATTERN)
     passport_number: str | None = Field(default=None, pattern=PASSPORT_NUMBER_PATTERN)
@@ -88,6 +95,12 @@ class EmployeeUpdate(BaseModel):
     nationality: str | None = Field(default=None, max_length=100)
     citizenship: str | None = Field(default=None, max_length=100)
     marital_status: MaritalStatus | None = None
+    academic_degree: str | None = Field(default=None, max_length=150)
+    academic_title: str | None = Field(default=None, max_length=150)
+    foreign_languages: str | None = Field(default=None, max_length=255)
+    military_rank: str | None = Field(default=None, max_length=150)
+    party_affiliation: str | None = Field(default=None, max_length=150)
+    public_office_note: str | None = None
     pinfl: str | None = Field(default=None, pattern=PINFL_PATTERN)
     passport_series: str | None = Field(default=None, pattern=PASSPORT_SERIES_PATTERN)
     passport_number: str | None = Field(default=None, pattern=PASSPORT_NUMBER_PATTERN)
@@ -126,6 +139,12 @@ class EmployeeRead(ORMBase):
     nationality: str | None
     citizenship: str | None
     marital_status: MaritalStatus | None
+    academic_degree: str | None
+    academic_title: str | None
+    foreign_languages: str | None
+    military_rank: str | None
+    party_affiliation: str | None
+    public_office_note: str | None
     passport_series: str | None
     passport_issued_by: str | None
     passport_issued_date: date | None

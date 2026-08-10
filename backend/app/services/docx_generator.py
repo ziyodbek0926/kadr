@@ -1,8 +1,11 @@
-"""Xodim ma'lumotlari asosida "Obyektivka" (.docx) hujjatini python-docx bilan generatsiya
-qilish. Bu — dastlabki (boshlang'ich) kod strukturasi: aniq tashkilotning rasmiy shabloni
-mavjud bo'lsa, `templates/README.md`da tavsiya etilganidek docxtpl + tayyor .docx shabloniga
-o'tish ishlab chiqarish uchun qulayroq. Employee obyekti chaqirilishdan oldin barcha
-bog'liq to'plamlari (relatives/education_history/...) yuklangan bo'lishi kerak
+"""Xodim ma'lumotlari asosida "МАЪЛУМОТНОМА" (obyektivka, .docx) hujjatini python-docx
+bilan generatsiya qilish. Tuzilma va maydonlar tashkilotning haqiqiy namunaviy hujjatidan
+(kirill yozuvida) olingan: sarlavha, F.I.Sh. qatori, joriy lavozim + "...дан:" sanasi,
+juft-ustunli shaxsiy ma'lumotlar, birlashtirilgan ta'lim+mehnat xronologiyasi ("МЕҲНАТ
+ФАОЛИЯТИ") va yaqin qarindoshlar jadvali — aynan shu tartibda va ustun nomlari bilan.
+
+Employee obyekti chaqirilishdan oldin barcha bog'liq to'plamlari (relatives/
+education_history/work_history/awards/...) yuklangan bo'lishi kerak
 (app.crud.employee.CRUDEmployee.get_detail orqali)."""
 
 import re
@@ -13,32 +16,38 @@ import nh3
 from docx import Document
 from docx.document import Document as DocxDocument
 from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Cm, Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.shared import Cm, Inches, Pt
 
+from app.models.education_history import EducationHistory
 from app.models.employee import Employee
+from app.models.relative import Relative
+from app.models.work_history import WorkHistory
 
+_EMPTY = "Йўқ"
+_TAB_POSITION = Inches(3.3)
 
 _RELATION_LABELS = {
-    "father": "Otasi",
-    "mother": "Onasi",
-    "spouse": "Turmush o'rtog'i",
-    "child": "Farzandi",
-    "sibling": "Aka/uka, opa/singlisi",
-    "other": "Boshqa qarindosh",
+    "father": "Отаси",
+    "mother": "Онаси",
+    "spouse": "Турмуш ўртоғи",
+    "child": "Фарзанди",
+    "sibling": "Ака/укаси, опа/синглиси",
+    "other": "Қариндоши",
 }
-_GENDER_LABELS = {"male": "Erkak", "female": "Ayol"}
 _EDUCATION_LEVEL_LABELS = {
-    "secondary": "O'rta",
-    "secondary_special": "O'rta-maxsus",
-    "bachelor": "Bakalavr",
-    "master": "Magistr",
-    "phd": "Fan doktori/nomzodi",
+    "secondary": "ўрта",
+    "secondary_special": "ўрта-махсус",
+    "bachelor": "олий",
+    "master": "олий",
+    "phd": "олий (илмий даража)",
 }
-_EMPLOYMENT_STATUS_LABELS = {
-    "active": "Faoliyat yuritmoqda",
-    "on_leave": "Ta'til/dam olishda",
-    "dismissed": "Bo'shatilgan",
+# "...дан:" (ablative — "shu sanadan beri") qo'shimchasi bilan, haqiqiy namunadagi
+# "6-Сентябрдан:" uslubiga mos keladigan shaklda.
+_MONTH_SINCE_CY = {
+    1: "январдан", 2: "февралдан", 3: "мартдан", 4: "апрелдан",
+    5: "майдан", 6: "июндан", 7: "июлдан", 8: "августдан",
+    9: "сентябрдан", 10: "октябрдан", 11: "ноябрдан", 12: "декабрдан",
 }
 
 
@@ -49,11 +58,7 @@ def _strip_html(value: str | None) -> list[str]:
     qatlami): oddiy regex bilan teg olib tashlansa, `<script>alert(1)</script>` kabi
     holatlarda teg o'chadi-yu, ICHIDAGI matn ("alert(1)") qolib ketadi — nh3 esa
     script/style kabi xavfli elementlarni mazmuni bilan birga olib tashlaydi (faqat
-    "p"/"br" ruxsat etilgan holda ham). Bu masalan scripts/import_from_access.py kabi
-    Pydantic validatsiyasini chetlab o'tuvchi yo'llar orqali tozalanmagan matn bazaga
-    tushib qolgan taqdirda ham hujjatga xavfli/chalkash matn chiqmasligini kafolatlaydi.
-    "p"/"br" ataylab ruxsat etiladi — ular paragraf chegaralarini saqlab qoladi, keyin
-    pastda newline'ga aylantiriladi."""
+    "p"/"br" ruxsat etilgan holda ham)."""
     if not value:
         return []
     safe_html = nh3.clean(value, tags={"p", "br"})
@@ -64,7 +69,7 @@ def _strip_html(value: str | None) -> list[str]:
 
 
 def _format_date(value: date | None) -> str:
-    return value.strftime("%d.%m.%Y") if value else "—"
+    return value.strftime("%d.%m.%Y") if value else _EMPTY
 
 
 def _set_base_style(document: DocxDocument) -> None:
@@ -72,17 +77,105 @@ def _set_base_style(document: DocxDocument) -> None:
     style.font.name = "Times New Roman"
     style.font.size = Pt(12)
     section = document.sections[0]
-    section.top_margin = Cm(2)
-    section.bottom_margin = Cm(2)
-    section.left_margin = Cm(3)
-    section.right_margin = Cm(1.5)
+    section.top_margin = Cm(1.5)
+    section.bottom_margin = Cm(1)
+    section.left_margin = Cm(2)
+    section.right_margin = Cm(1)
 
 
-def _add_field(document: DocxDocument, label: str, value: str) -> None:
+def _add_centered(document: DocxDocument, text: str, size: int, bold: bool = True) -> None:
     p = document.add_paragraph()
-    run_label = p.add_run(f"{label}: ")
-    run_label.bold = True
-    p.add_run(value or "—")
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = p.add_run(text)
+    run.bold = bold
+    run.font.size = Pt(size)
+
+
+def _add_field_pair(
+    document: DocxDocument,
+    label1: str,
+    value1: str | None,
+    label2: str | None = None,
+    value2: str | None = None,
+) -> None:
+    """Haqiqiy namunadagi uslub: bir qatorda qalin yozuvli 1-2 ta bo'lim nomi, undan
+    keyingi qatorda TAB orqali tekislangan qiymatlar. Table emas — original hujjat ham
+    aynan shu tarzda (TAB belgilari bilan) qurilgan."""
+    label_p = document.add_paragraph()
+    label_p.paragraph_format.tab_stops.add_tab_stop(_TAB_POSITION, WD_TAB_ALIGNMENT.LEFT)
+    label_run = label_p.add_run(f"{label1}:")
+    label_run.bold = True
+    if label2:
+        label_p.add_run("\t")
+        label_run2 = label_p.add_run(f"{label2}:")
+        label_run2.bold = True
+
+    value_p = document.add_paragraph()
+    value_p.paragraph_format.tab_stops.add_tab_stop(_TAB_POSITION, WD_TAB_ALIGNMENT.LEFT)
+    value_p.paragraph_format.space_after = Pt(6)
+    value_p.add_run(value1 or _EMPTY)
+    if label2:
+        value_p.add_run("\t")
+        value_p.add_run(value2 or _EMPTY)
+
+
+def _education_end_date(edu: EducationHistory) -> date:
+    # Faqat end_date is not None bilan oldindan filtrlangan ro'yxatlarda chaqiriladi —
+    # shu sababli bu yerda None kelmasligi kafolatlangan (mypy uchun aniq tur beradi).
+    assert edu.end_date is not None
+    return edu.end_date
+
+
+def _since_line(position_since: date | None) -> str | None:
+    if not position_since:
+        return None
+    month = _MONTH_SINCE_CY[position_since.month].capitalize()
+    return f"{position_since.year} йил {position_since.day}-{month}:"
+
+
+def _build_timeline(
+    education_history: list[EducationHistory], work_history: list[WorkHistory]
+) -> list[str]:
+    """"МЕҲНАТ ФАОЛИЯТИ" bo'limi — haqiqiy namunada ta'lim va mehnat tarixi ALOHIDA
+    jadvallarda emas, balki bitta xronologik ro'yxatda (sana bo'yicha saralangan)
+    birlashtirilgan holda ko'rsatiladi."""
+    entries: list[tuple[date, date | None, str]] = []
+    for edu in education_history:
+        if not edu.start_date:
+            continue
+        description = edu.institution_name
+        if edu.specialty:
+            description += f", {edu.specialty} йўналиши"
+        entries.append((edu.start_date, edu.end_date, description))
+    for work in work_history:
+        entries.append((work.start_date, work.end_date, f"{work.organization_name}, {work.position_title}"))
+
+    entries.sort(key=lambda entry: entry[0])
+    lines = []
+    for start, end, description in entries:
+        end_label = str(end.year) if end else "ҳ.в."
+        lines.append(f"{start.year}-{end_label} йй. - {description}")
+    return lines
+
+
+def _relative_row(relative: Relative) -> list[str]:
+    birth = ""
+    if relative.birth_year:
+        birth = f"{relative.birth_year} йил"
+        if relative.birth_place:
+            birth += f", {relative.birth_place}"
+    elif relative.birth_place:
+        birth = relative.birth_place
+
+    workplace = ", ".join(part for part in (relative.workplace, relative.position_title) if part)
+    relation_value = relative.relation_type.value
+    return [
+        _RELATION_LABELS.get(relation_value, relation_value),
+        relative.full_name,
+        birth or _EMPTY,
+        workplace or _EMPTY,
+        relative.address or _EMPTY,
+    ]
 
 
 def _add_table(document: DocxDocument, headers: list[str], rows: list[list[str]]) -> None:
@@ -103,130 +196,91 @@ def generate_objektivka(employee: Employee) -> BytesIO:
     document = Document()
     _set_base_style(document)
 
-    title = document.add_heading("OBYEKTIVKA", level=1)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-    subtitle = document.add_paragraph(employee.full_name.upper())
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    subtitle.runs[0].bold = True
-    subtitle.runs[0].font.size = Pt(14)
+    _add_centered(document, "МАЪЛУМОТНОМА", 16)
+    _add_centered(document, employee.full_name, 16)
 
     if employee.position:
-        pos_line = document.add_paragraph(f"{employee.position.title} — {employee.position.department.name}")
-        pos_line.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        since = _since_line(employee.position_since)
+        if since:
+            since_p = document.add_paragraph()
+            since_run = since_p.add_run(since)
+            since_run.bold = True
+        document.add_paragraph(f"{employee.position.department.name} {employee.position.title}")
 
     document.add_paragraph()
 
-    _add_field(document, "Tug'ilgan sana", _format_date(employee.birth_date))
-    _add_field(document, "Tug'ilgan joyi", employee.birth_place or "—")
-    _add_field(document, "Jinsi", _GENDER_LABELS.get(employee.gender.value, employee.gender.value))
-    _add_field(document, "Millati", employee.nationality or "—")
-    _add_field(document, "Fuqaroligi", employee.citizenship or "—")
-    _add_field(document, "Joriy manzili", employee.current_address or "—")
-    _add_field(document, "Doimiy yashash manzili", employee.permanent_address or "—")
-    _add_field(document, "Telefon raqami", employee.phone_number or "—")
-    _add_field(document, "Ishga qabul qilingan sana", _format_date(employee.hire_date))
-    _add_field(document, "Joriy lavozimda ishlay boshlagan sana", _format_date(employee.position_since))
-    _add_field(
+    _add_field_pair(document, "Туғилган йили", _format_date(employee.birth_date), "Туғилган жойи", employee.birth_place)
+    _add_field_pair(document, "Миллати", employee.nationality, "Партиявийлиги", employee.party_affiliation)
+
+    completed_education = [edu for edu in employee.education_history if edu.end_date is not None]
+    latest_education = max(completed_education, key=_education_end_date, default=None)
+    level_label = _EDUCATION_LEVEL_LABELS.get(latest_education.level.value, "") if latest_education else None
+    completed = (
+        f"{_education_end_date(latest_education).year} йил {latest_education.institution_name}"
+        if latest_education
+        else None
+    )
+    _add_field_pair(document, "Маълумоти", level_label, "Тамомлаган", completed)
+
+    _add_field_pair(document, "Илмий даражаси", employee.academic_degree, "Илмий унвони", employee.academic_title)
+    _add_field_pair(
         document,
-        "Holati",
-        _EMPLOYMENT_STATUS_LABELS.get(employee.employment_status.value, employee.employment_status.value),
+        "Қайси чет тилларини билади",
+        employee.foreign_languages,
+        "Ҳарбий (махсус) унвон",
+        employee.military_rank,
     )
 
-    document.add_heading("Ta'lim to'g'risida ma'lumot", level=2)
-    if employee.education_history:
-        _add_table(
-            document,
-            ["O'quv muassasasi", "Mutaxassisligi", "Daraja", "Davri", "Hujjat №"],
-            [
-                [
-                    edu.institution_name,
-                    edu.specialty or "—",
-                    _EDUCATION_LEVEL_LABELS.get(edu.level.value, edu.level.value),
-                    f"{_format_date(edu.start_date)} — {_format_date(edu.end_date)}",
-                    edu.document_number or "—",
-                ]
-                for edu in employee.education_history
-            ],
-        )
-    else:
-        document.add_paragraph("Ma'lumot kiritilmagan.")
+    awards_summary = ", ".join(award.name for award in employee.awards) if employee.awards else None
+    _add_field_pair(document, "Давлат мукофотлари билан тақдирланганми (қанақа)", awards_summary)
+    _add_field_pair(
+        document,
+        "Халқ депутатлари, республика, вилоят, шаҳар ва туман Кенгашлари депутатлари "
+        "ёки бошқа сайланадиган органлар аъзосими",
+        employee.public_office_note,
+    )
 
-    document.add_heading("Mehnat faoliyati", level=2)
-    if employee.work_history:
-        _add_table(
-            document,
-            ["Tashkilot", "Lavozim", "Davri", "Buyruq asosida"],
-            [
-                [
-                    wh.organization_name,
-                    wh.position_title,
-                    f"{_format_date(wh.start_date)} — {_format_date(wh.end_date) if wh.end_date else 'hozirgacha'}",
-                    wh.order_reference or "—",
-                ]
-                for wh in employee.work_history
-            ],
-        )
+    document.add_paragraph()
+    _add_centered(document, "МЕҲНАТ ФАОЛИЯТИ", 14)
+    timeline = _build_timeline(employee.education_history, employee.work_history)
+    if timeline:
+        for line in timeline:
+            document.add_paragraph(line)
     else:
-        document.add_paragraph("Ma'lumot kiritilmagan.")
+        document.add_paragraph("Маълумот киритилмаган.")
 
-    document.add_heading("Yaqin qarindoshlari", level=2)
+    document.add_paragraph()
+    document.add_paragraph()
+    _add_centered(document, f"{employee.full_name}нинг яқин қариндошлари тўғрисида", 12)
+    _add_centered(document, "МАЪЛУМОТ", 12)
+    document.add_paragraph()
+
     if employee.relatives:
         _add_table(
             document,
-            ["Qarindoshlik", "F.I.Sh.", "Tug'ilgan yili", "Ish joyi / lavozimi", "Manzili"],
             [
-                [
-                    _RELATION_LABELS.get(rel.relation_type.value, rel.relation_type.value),
-                    rel.full_name,
-                    str(rel.birth_year) if rel.birth_year else "—",
-                    f"{rel.workplace or '—'} / {rel.position_title or '—'}",
-                    rel.address or "—",
-                ]
-                for rel in employee.relatives
+                "Қариндош-\nлари",
+                "Фамилияси, исми ва\nотасининг исми",
+                "Туғилган йили\nва жойи",
+                "Иш жойи ва\nлавозими",
+                "Яшаш жойи",
             ],
+            [_relative_row(relative) for relative in employee.relatives],
         )
     else:
-        document.add_paragraph("Ma'lumot kiritilmagan.")
-
-    document.add_heading("Davlat mukofotlari", level=2)
-    if employee.awards:
-        _add_table(
-            document,
-            ["Mukofot nomi", "Sanasi", "Tavsiya etgan tashkilot"],
-            [
-                [award.name, _format_date(award.awarded_date), award.recommending_organization or "—"]
-                for award in employee.awards
-            ],
-        )
-    else:
-        document.add_paragraph("Mukofotlari yo'q.")
-
-    if employee.foreign_trips:
-        document.add_heading("Xorijga chiqishlari", level=2)
-        _add_table(
-            document,
-            ["Davlat", "Maqsadi", "Davri", "Asos hujjat"],
-            [
-                [
-                    trip.country,
-                    trip.purpose or "—",
-                    f"{_format_date(trip.start_date)} — {_format_date(trip.end_date)}",
-                    trip.order_basis or "—",
-                ]
-                for trip in employee.foreign_trips
-            ],
-        )
+        document.add_paragraph("Маълумот киритилмаган.")
 
     positive_lines = _strip_html(employee.positive_traits)
     if positive_lines:
-        document.add_heading("Ijobiy fazilatlari", level=2)
+        document.add_paragraph()
+        _add_centered(document, "Ижобий фазилатлари", 12)
         for line in positive_lines:
             document.add_paragraph(line)
 
     negative_lines = _strip_html(employee.negative_traits)
     if negative_lines:
-        document.add_heading("Salbiy fazilatlari / tanqidiy fikrlar", level=2)
+        document.add_paragraph()
+        _add_centered(document, "Салбий фазилатлари", 12)
         for line in negative_lines:
             document.add_paragraph(line)
 
