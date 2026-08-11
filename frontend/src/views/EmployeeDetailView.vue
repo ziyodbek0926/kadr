@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { deleteEmployee, downloadObjektivka, getEmployee, getEmployeeSensitive, updateEmployee } from '@/api/employees'
-import { listPositions } from '@/api/departments'
 import AwardsSection from '@/components/AwardsSection.vue'
+import DocumentAttachmentsSection from '@/components/DocumentAttachmentsSection.vue'
 import EducationSection from '@/components/EducationSection.vue'
 import ForeignTripsSection from '@/components/ForeignTripsSection.vue'
+import PositionSelect from '@/components/PositionSelect.vue'
 import RelativesSection from '@/components/RelativesSection.vue'
 import WorkHistorySection from '@/components/WorkHistorySection.vue'
 import { EDUCATION_LEVEL_LABELS, EMPLOYMENT_STATUS_LABELS, GENDER_LABELS, MARITAL_STATUS_LABELS } from '@/constants/labels'
 import { useAuthStore } from '@/stores/auth'
-import type { EmployeeDetailRead, EmployeeInput, EmployeeSensitiveRead, PositionReadWithDepartment } from '@/types/employee'
+import type { EmployeeDetailRead, EmployeeInput, EmployeeSensitiveRead } from '@/types/employee'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -18,7 +19,6 @@ const auth = useAuthStore()
 
 const employeeId = Number(route.params.id)
 const employee = ref<EmployeeDetailRead | null>(null)
-const positions = ref<PositionReadWithDepartment[]>([])
 const loading = ref(true)
 const editing = ref(false)
 const saving = ref(false)
@@ -27,7 +27,7 @@ const error = ref('')
 const sensitive = ref<EmployeeSensitiveRead | null>(null)
 const sensitiveLoading = ref(false)
 
-const canEdit = computed(() => auth.role === 'super_admin' || auth.role === 'hr_operator')
+const canEdit = computed(() => auth.canEdit)
 const canDelete = computed(() => auth.role === 'super_admin')
 
 const form = ref<EmployeeInput>(blankForm())
@@ -100,8 +100,7 @@ async function reload() {
 onMounted(async () => {
   loading.value = true
   try {
-    const [, positionList] = await Promise.all([reload(), listPositions()])
-    positions.value = positionList
+    await reload()
   } finally {
     loading.value = false
   }
@@ -254,10 +253,7 @@ function goBack() {
 
           <div>
             <label class="mb-1 block text-xs text-slate-600">Lavozimi</label>
-            <select v-model="form.position_id" class="w-full rounded border px-2 py-1.5 text-sm">
-              <option :value="null">—</option>
-              <option v-for="p in positions" :key="p.id" :value="p.id">{{ p.department.name }} — {{ p.title }}</option>
-            </select>
+            <PositionSelect v-model="form.position_id" />
           </div>
           <div><label class="mb-1 block text-xs text-slate-600">Joriy lavozimda (sana)</label><input v-model="form.position_since" type="date" class="w-full rounded border px-2 py-1.5 text-sm" /></div>
           <div><label class="mb-1 block text-xs text-slate-600">Ishga kirgan sana</label><input v-model="form.hire_date" type="date" class="w-full rounded border px-2 py-1.5 text-sm" /></div>
@@ -286,6 +282,7 @@ function goBack() {
         <WorkHistorySection :employee-id="employeeId" :items="employee.work_history" @changed="reload" />
         <AwardsSection :employee-id="employeeId" :items="employee.awards" @changed="reload" />
         <ForeignTripsSection :employee-id="employeeId" :items="employee.foreign_trips" @changed="reload" />
+        <DocumentAttachmentsSection :employee-id="employeeId" :items="employee.attachments" @changed="reload" />
       </div>
     </template>
   </div>

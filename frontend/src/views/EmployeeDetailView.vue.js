@@ -1,8 +1,9 @@
 import { deleteEmployee, downloadObjektivka, getEmployee, getEmployeeSensitive, updateEmployee } from '@/api/employees';
-import { listPositions } from '@/api/departments';
 import AwardsSection from '@/components/AwardsSection.vue';
+import DocumentAttachmentsSection from '@/components/DocumentAttachmentsSection.vue';
 import EducationSection from '@/components/EducationSection.vue';
 import ForeignTripsSection from '@/components/ForeignTripsSection.vue';
+import PositionSelect from '@/components/PositionSelect.vue';
 import RelativesSection from '@/components/RelativesSection.vue';
 import WorkHistorySection from '@/components/WorkHistorySection.vue';
 import { EMPLOYMENT_STATUS_LABELS, GENDER_LABELS, MARITAL_STATUS_LABELS } from '@/constants/labels';
@@ -14,14 +15,13 @@ const router = useRouter();
 const auth = useAuthStore();
 const employeeId = Number(route.params.id);
 const employee = ref(null);
-const positions = ref([]);
 const loading = ref(true);
 const editing = ref(false);
 const saving = ref(false);
 const error = ref('');
 const sensitive = ref(null);
 const sensitiveLoading = ref(false);
-const canEdit = computed(() => auth.role === 'super_admin' || auth.role === 'hr_operator');
+const canEdit = computed(() => auth.canEdit);
 const canDelete = computed(() => auth.role === 'super_admin');
 const form = ref(blankForm());
 function blankForm() {
@@ -89,8 +89,7 @@ async function reload() {
 onMounted(async () => {
     loading.value = true;
     try {
-        const [, positionList] = await Promise.all([reload(), listPositions()]);
-        positions.value = positionList;
+        await reload();
     }
     finally {
         loading.value = false;
@@ -486,21 +485,14 @@ else if (__VLS_ctx.employee) {
         __VLS_asFunctionalElement(__VLS_intrinsicElements.label, __VLS_intrinsicElements.label)({
             ...{ class: "mb-1 block text-xs text-slate-600" },
         });
-        __VLS_asFunctionalElement(__VLS_intrinsicElements.select, __VLS_intrinsicElements.select)({
-            value: (__VLS_ctx.form.position_id),
-            ...{ class: "w-full rounded border px-2 py-1.5 text-sm" },
-        });
-        __VLS_asFunctionalElement(__VLS_intrinsicElements.option, __VLS_intrinsicElements.option)({
-            value: (null),
-        });
-        for (const [p] of __VLS_getVForSourceType((__VLS_ctx.positions))) {
-            __VLS_asFunctionalElement(__VLS_intrinsicElements.option, __VLS_intrinsicElements.option)({
-                key: (p.id),
-                value: (p.id),
-            });
-            (p.department.name);
-            (p.title);
-        }
+        /** @type {[typeof PositionSelect, ]} */ ;
+        // @ts-ignore
+        const __VLS_0 = __VLS_asFunctionalComponent(PositionSelect, new PositionSelect({
+            modelValue: (__VLS_ctx.form.position_id),
+        }));
+        const __VLS_1 = __VLS_0({
+            modelValue: (__VLS_ctx.form.position_id),
+        }, ...__VLS_functionalComponentArgsRest(__VLS_0));
         __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({});
         __VLS_asFunctionalElement(__VLS_intrinsicElements.label, __VLS_intrinsicElements.label)({
             ...{ class: "mb-1 block text-xs text-slate-600" },
@@ -585,99 +577,118 @@ else if (__VLS_ctx.employee) {
     });
     /** @type {[typeof RelativesSection, ]} */ ;
     // @ts-ignore
-    const __VLS_0 = __VLS_asFunctionalComponent(RelativesSection, new RelativesSection({
+    const __VLS_3 = __VLS_asFunctionalComponent(RelativesSection, new RelativesSection({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.relatives),
     }));
-    const __VLS_1 = __VLS_0({
+    const __VLS_4 = __VLS_3({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.relatives),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_0));
-    let __VLS_3;
-    let __VLS_4;
-    let __VLS_5;
-    const __VLS_6 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_3));
+    let __VLS_6;
+    let __VLS_7;
+    let __VLS_8;
+    const __VLS_9 = {
         onChanged: (__VLS_ctx.reload)
     };
-    var __VLS_2;
+    var __VLS_5;
     /** @type {[typeof EducationSection, ]} */ ;
     // @ts-ignore
-    const __VLS_7 = __VLS_asFunctionalComponent(EducationSection, new EducationSection({
+    const __VLS_10 = __VLS_asFunctionalComponent(EducationSection, new EducationSection({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.education_history),
     }));
-    const __VLS_8 = __VLS_7({
+    const __VLS_11 = __VLS_10({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.education_history),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_7));
-    let __VLS_10;
-    let __VLS_11;
-    let __VLS_12;
-    const __VLS_13 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_10));
+    let __VLS_13;
+    let __VLS_14;
+    let __VLS_15;
+    const __VLS_16 = {
         onChanged: (__VLS_ctx.reload)
     };
-    var __VLS_9;
+    var __VLS_12;
     /** @type {[typeof WorkHistorySection, ]} */ ;
     // @ts-ignore
-    const __VLS_14 = __VLS_asFunctionalComponent(WorkHistorySection, new WorkHistorySection({
+    const __VLS_17 = __VLS_asFunctionalComponent(WorkHistorySection, new WorkHistorySection({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.work_history),
     }));
-    const __VLS_15 = __VLS_14({
+    const __VLS_18 = __VLS_17({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.work_history),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_14));
-    let __VLS_17;
-    let __VLS_18;
-    let __VLS_19;
-    const __VLS_20 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_17));
+    let __VLS_20;
+    let __VLS_21;
+    let __VLS_22;
+    const __VLS_23 = {
         onChanged: (__VLS_ctx.reload)
     };
-    var __VLS_16;
+    var __VLS_19;
     /** @type {[typeof AwardsSection, ]} */ ;
     // @ts-ignore
-    const __VLS_21 = __VLS_asFunctionalComponent(AwardsSection, new AwardsSection({
+    const __VLS_24 = __VLS_asFunctionalComponent(AwardsSection, new AwardsSection({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.awards),
     }));
-    const __VLS_22 = __VLS_21({
+    const __VLS_25 = __VLS_24({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.awards),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_21));
-    let __VLS_24;
-    let __VLS_25;
-    let __VLS_26;
-    const __VLS_27 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_24));
+    let __VLS_27;
+    let __VLS_28;
+    let __VLS_29;
+    const __VLS_30 = {
         onChanged: (__VLS_ctx.reload)
     };
-    var __VLS_23;
+    var __VLS_26;
     /** @type {[typeof ForeignTripsSection, ]} */ ;
     // @ts-ignore
-    const __VLS_28 = __VLS_asFunctionalComponent(ForeignTripsSection, new ForeignTripsSection({
+    const __VLS_31 = __VLS_asFunctionalComponent(ForeignTripsSection, new ForeignTripsSection({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.foreign_trips),
     }));
-    const __VLS_29 = __VLS_28({
+    const __VLS_32 = __VLS_31({
         ...{ 'onChanged': {} },
         employeeId: (__VLS_ctx.employeeId),
         items: (__VLS_ctx.employee.foreign_trips),
-    }, ...__VLS_functionalComponentArgsRest(__VLS_28));
-    let __VLS_31;
-    let __VLS_32;
-    let __VLS_33;
-    const __VLS_34 = {
+    }, ...__VLS_functionalComponentArgsRest(__VLS_31));
+    let __VLS_34;
+    let __VLS_35;
+    let __VLS_36;
+    const __VLS_37 = {
         onChanged: (__VLS_ctx.reload)
     };
-    var __VLS_30;
+    var __VLS_33;
+    /** @type {[typeof DocumentAttachmentsSection, ]} */ ;
+    // @ts-ignore
+    const __VLS_38 = __VLS_asFunctionalComponent(DocumentAttachmentsSection, new DocumentAttachmentsSection({
+        ...{ 'onChanged': {} },
+        employeeId: (__VLS_ctx.employeeId),
+        items: (__VLS_ctx.employee.attachments),
+    }));
+    const __VLS_39 = __VLS_38({
+        ...{ 'onChanged': {} },
+        employeeId: (__VLS_ctx.employeeId),
+        items: (__VLS_ctx.employee.attachments),
+    }, ...__VLS_functionalComponentArgsRest(__VLS_38));
+    let __VLS_41;
+    let __VLS_42;
+    let __VLS_43;
+    const __VLS_44 = {
+        onChanged: (__VLS_ctx.reload)
+    };
+    var __VLS_40;
 }
 /** @type {__VLS_StyleScopedClasses['mx-auto']} */ ;
 /** @type {__VLS_StyleScopedClasses['max-w-5xl']} */ ;
@@ -961,12 +972,6 @@ else if (__VLS_ctx.employee) {
 /** @type {__VLS_StyleScopedClasses['block']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-xs']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-600']} */ ;
-/** @type {__VLS_StyleScopedClasses['w-full']} */ ;
-/** @type {__VLS_StyleScopedClasses['rounded']} */ ;
-/** @type {__VLS_StyleScopedClasses['border']} */ ;
-/** @type {__VLS_StyleScopedClasses['px-2']} */ ;
-/** @type {__VLS_StyleScopedClasses['py-1.5']} */ ;
-/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
 /** @type {__VLS_StyleScopedClasses['mb-1']} */ ;
 /** @type {__VLS_StyleScopedClasses['block']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-xs']} */ ;
@@ -1049,8 +1054,10 @@ const __VLS_self = (await import('vue')).defineComponent({
     setup() {
         return {
             AwardsSection: AwardsSection,
+            DocumentAttachmentsSection: DocumentAttachmentsSection,
             EducationSection: EducationSection,
             ForeignTripsSection: ForeignTripsSection,
+            PositionSelect: PositionSelect,
             RelativesSection: RelativesSection,
             WorkHistorySection: WorkHistorySection,
             EMPLOYMENT_STATUS_LABELS: EMPLOYMENT_STATUS_LABELS,
@@ -1058,7 +1065,6 @@ const __VLS_self = (await import('vue')).defineComponent({
             MARITAL_STATUS_LABELS: MARITAL_STATUS_LABELS,
             employeeId: employeeId,
             employee: employee,
-            positions: positions,
             loading: loading,
             editing: editing,
             saving: saving,

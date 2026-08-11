@@ -80,6 +80,17 @@ export interface ForeignTripRead {
 }
 export type ForeignTripInput = Omit<ForeignTripRead, 'id' | 'employee_id'>
 
+export interface DocumentAttachmentRead {
+  id: number
+  employee_id: number
+  file_type: string
+  original_filename: string
+  content_type: string
+  size_bytes: number
+  uploaded_by_id: number | null
+  uploaded_at: string
+}
+
 export interface EmployeeListItem {
   id: number
   full_name: string
@@ -126,6 +137,7 @@ export interface EmployeeDetailRead extends EmployeeRead {
   work_history: WorkHistoryRead[]
   awards: AwardRead[]
   foreign_trips: ForeignTripRead[]
+  attachments: DocumentAttachmentRead[]
 }
 
 export interface EmployeeSensitiveRead {
@@ -197,4 +209,18 @@ export interface EmployeeSearchResult {
   page: number
   page_size: number
   items: EmployeeListItem[]
+}
+
+export interface LabelCount {
+  label: string
+  count: number
+}
+
+export interface DashboardStats {
+  total_employees: number
+  by_gender: LabelCount[]
+  by_employment_status: LabelCount[]
+  by_education_level: LabelCount[]
+  by_age_bucket: LabelCount[]
+  by_department: LabelCount[]
 }

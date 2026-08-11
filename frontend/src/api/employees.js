@@ -77,3 +77,30 @@ export const educationApi = nestedResourceApi('education');
 export const workHistoryApi = nestedResourceApi('work-history');
 export const awardsApi = nestedResourceApi('awards');
 export const foreignTripsApi = nestedResourceApi('foreign-trips');
+/**
+ * Biriktirilgan hujjatlar ro'yxati alohida GET'ga ega emas — getEmployee()/getEmployeeDetail
+ * chaqirilganda EmployeeDetailRead.attachments orqali keladi (boshqa bola-resurslar kabi).
+ */
+export async function uploadAttachment(employeeId, file, fileType) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('file_type', fileType);
+    const { data } = await apiClient.post(`/employees/${employeeId}/attachments`, formData);
+    return data;
+}
+export async function downloadAttachment(employeeId, attachment) {
+    const response = await apiClient.get(`/employees/${employeeId}/attachments/${attachment.id}/download`, {
+        responseType: 'blob',
+    });
+    const url = URL.createObjectURL(response.data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = attachment.original_filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+}
+export async function deleteAttachment(employeeId, attachmentId) {
+    await apiClient.delete(`/employees/${employeeId}/attachments/${attachmentId}`);
+}

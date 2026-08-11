@@ -14,6 +14,7 @@ _DETAIL_RELATIONSHIPS = (
     "work_history",
     "awards",
     "foreign_trips",
+    "attachments",
 )
 
 

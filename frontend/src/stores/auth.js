@@ -6,6 +6,9 @@ export const useAuthStore = defineStore('auth', {
         username: null,
         role: null,
     }),
+    getters: {
+        canEdit: (state) => state.role === 'super_admin' || state.role === 'hr_operator',
+    },
     actions: {
         async login(username, password) {
             const { data } = await apiClient.post('/auth/login', { username, password });

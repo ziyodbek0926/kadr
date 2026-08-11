@@ -2,6 +2,7 @@ import apiClient from '@/api/client'
 import type {
   AwardInput,
   AwardRead,
+  DocumentAttachmentRead,
   EducationHistoryInput,
   EducationHistoryRead,
   EmployeeDetailRead,
@@ -106,3 +107,40 @@ export const educationApi = nestedResourceApi<EducationHistoryRead, EducationHis
 export const workHistoryApi = nestedResourceApi<WorkHistoryRead, WorkHistoryInput>('work-history')
 export const awardsApi = nestedResourceApi<AwardRead, AwardInput>('awards')
 export const foreignTripsApi = nestedResourceApi<ForeignTripRead, ForeignTripInput>('foreign-trips')
+
+/**
+ * Biriktirilgan hujjatlar ro'yxati alohida GET'ga ega emas — getEmployee()/getEmployeeDetail
+ * chaqirilganda EmployeeDetailRead.attachments orqali keladi (boshqa bola-resurslar kabi).
+ */
+export async function uploadAttachment(
+  employeeId: number,
+  file: File,
+  fileType: string,
+): Promise<DocumentAttachmentRead> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('file_type', fileType)
+  const { data } = await apiClient.post<DocumentAttachmentRead>(`/employees/${employeeId}/attachments`, formData)
+  return data
+}
+
+export async function downloadAttachment(
+  employeeId: number,
+  attachment: DocumentAttachmentRead,
+): Promise<void> {
+  const response = await apiClient.get(`/employees/${employeeId}/attachments/${attachment.id}/download`, {
+    responseType: 'blob',
+  })
+  const url = URL.createObjectURL(response.data as Blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = attachment.original_filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+export async function deleteAttachment(employeeId: number, attachmentId: number): Promise<void> {
+  await apiClient.delete(`/employees/${employeeId}/attachments/${attachmentId}`)
+}

@@ -27,7 +27,33 @@ kadr/
 └── docs/               TZ, loyiha prompt hujjati, arxitektura
 ```
 
-## Ishga tushirish (lokal, Docker'siz)
+## Tezkor start — shu kompyuterda, allaqachon sozlangan
+
+Bu repozitoriyda PostgreSQL 18 (lokal xizmat), `backend/.env`, ma'lumotlar bazasi
+jadvallari (`alembic upgrade head`), sobit rollar va birinchi SuperAdmin foydalanuvchisi
+**allaqachon sozlangan va sinovdan o'tgan** — hech qanday tashqi serverga ulanish shart
+emas, hammasi shu kompyuterda ishlaydi.
+
+```bash
+start_kadr.bat
+```
+
+Bu backend serverni (`http://127.0.0.1:8000`) alohida oynada ko'taradi va desktop-ilovani
+ochadi. Boshlang'ich SuperAdmin login/paroli **git tomonidan kuzatilmaydigan**
+`LOCAL_CREDENTIALS.txt` faylida (repo tub papkasida) — birinchi kirishdan so'ng
+`Foydalanuvchi → Parolni almashtirish` orqali albatta o'zgartiring va shu faylni o'chirib
+tashlang.
+
+> PostgreSQL xizmati ishlab turishi kerak: Xizmatlar (Services) oynasida
+> `postgresql-x64-18` holati "Running" bo'lsin — odatda Windows bilan birga avtomatik
+> ishga tushadi.
+
+Bu — **standalone/lokal sinov rejimi**: backend ham, baza ham shu kompyuterning o'zida.
+Butun tashkilotga (bir nechta kompyuterga) tarqatish uchun backend markazlashgan serverga
+ko'chiriladi va desktop-ilova/`frontend/.env`dagi manzil o'sha serverga yo'naltiriladi —
+buning o'zi alohida, keyingi bosqich.
+
+## Ishga tushirish (lokal, Docker'siz) — noldan sozlash
 
 ### 1. Backend
 

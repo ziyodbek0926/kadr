@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 
 from app.api.v1.deps import CurrentUser, DbSession, EditorUser
 from app.crud.department import department_crud
@@ -53,8 +54,15 @@ async def update_department(
 @router.delete("/departments/{department_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_department(department_id: int, db: DbSession, current_user: EditorUser) -> None:
     department = await _get_department_or_404(db, department_id)
-    await department_crud.remove(db, db_obj=department)
-    await db.commit()
+    try:
+        await department_crud.remove(db, db_obj=department)
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Bu bo'limda lavozimlar mavjud — avval ularni o'chiring yoki boshqa bo'limga ko'chiring",
+        ) from None
 
 
 # ---- Lavozimlar ----

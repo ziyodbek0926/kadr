@@ -1,10 +1,9 @@
-import { listPositions } from '@/api/departments';
 import { createEmployee } from '@/api/employees';
+import PositionSelect from '@/components/PositionSelect.vue';
 import { GENDER_LABELS } from '@/constants/labels';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 const router = useRouter();
-const positions = ref([]);
 const saving = ref(false);
 const error = ref('');
 const form = ref({
@@ -18,9 +17,6 @@ const form = ref({
     citizenship: "O'zbekiston Respublikasi",
     position_id: null,
     employment_status: 'active',
-});
-onMounted(async () => {
-    positions.value = await listPositions();
 });
 async function submit() {
     error.value = '';
@@ -132,21 +128,14 @@ __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.d
 __VLS_asFunctionalElement(__VLS_intrinsicElements.label, __VLS_intrinsicElements.label)({
     ...{ class: "mb-1 block text-xs text-slate-600" },
 });
-__VLS_asFunctionalElement(__VLS_intrinsicElements.select, __VLS_intrinsicElements.select)({
-    value: (__VLS_ctx.form.position_id),
-    ...{ class: "w-full rounded border px-2 py-1.5 text-sm" },
-});
-__VLS_asFunctionalElement(__VLS_intrinsicElements.option, __VLS_intrinsicElements.option)({
-    value: (null),
-});
-for (const [p] of __VLS_getVForSourceType((__VLS_ctx.positions))) {
-    __VLS_asFunctionalElement(__VLS_intrinsicElements.option, __VLS_intrinsicElements.option)({
-        key: (p.id),
-        value: (p.id),
-    });
-    (p.department.name);
-    (p.title);
-}
+/** @type {[typeof PositionSelect, ]} */ ;
+// @ts-ignore
+const __VLS_0 = __VLS_asFunctionalComponent(PositionSelect, new PositionSelect({
+    modelValue: (__VLS_ctx.form.position_id),
+}));
+const __VLS_1 = __VLS_0({
+    modelValue: (__VLS_ctx.form.position_id),
+}, ...__VLS_functionalComponentArgsRest(__VLS_0));
 __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
     ...{ class: "sm:col-span-3" },
 });
@@ -275,12 +264,6 @@ __VLS_asFunctionalElement(__VLS_intrinsicElements.button, __VLS_intrinsicElement
 /** @type {__VLS_StyleScopedClasses['block']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-xs']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-600']} */ ;
-/** @type {__VLS_StyleScopedClasses['w-full']} */ ;
-/** @type {__VLS_StyleScopedClasses['rounded']} */ ;
-/** @type {__VLS_StyleScopedClasses['border']} */ ;
-/** @type {__VLS_StyleScopedClasses['px-2']} */ ;
-/** @type {__VLS_StyleScopedClasses['py-1.5']} */ ;
-/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
 /** @type {__VLS_StyleScopedClasses['sm:col-span-3']} */ ;
 /** @type {__VLS_StyleScopedClasses['mb-1']} */ ;
 /** @type {__VLS_StyleScopedClasses['block']} */ ;
@@ -307,8 +290,8 @@ var __VLS_dollars;
 const __VLS_self = (await import('vue')).defineComponent({
     setup() {
         return {
+            PositionSelect: PositionSelect,
             GENDER_LABELS: GENDER_LABELS,
-            positions: positions,
             saving: saving,
             error: error,
             form: form,

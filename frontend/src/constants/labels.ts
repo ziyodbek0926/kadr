@@ -34,3 +34,10 @@ export const EDUCATION_LEVEL_LABELS: Record<EducationLevel, string> = {
   master: 'Magistr',
   phd: "Fan doktori/nomzodi",
 }
+
+export const ATTACHMENT_TYPE_LABELS: Record<string, string> = {
+  diplom: 'Diplom',
+  pasport: 'Pasport nusxasi',
+  fotosurat: 'Fotosurat',
+  boshqa: 'Boshqa hujjat',
+}

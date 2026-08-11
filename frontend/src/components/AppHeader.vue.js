@@ -17,6 +17,9 @@ if (__VLS_ctx.auth.accessToken) {
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "mx-auto flex max-w-6xl items-center justify-between px-6 py-3" },
     });
+    __VLS_asFunctionalElement(__VLS_intrinsicElements.nav, __VLS_intrinsicElements.nav)({
+        ...{ class: "flex items-center gap-5" },
+    });
     const __VLS_0 = {}.RouterLink;
     /** @type {[typeof __VLS_components.RouterLink, typeof __VLS_components.RouterLink, ]} */ ;
     // @ts-ignore
@@ -30,6 +33,51 @@ if (__VLS_ctx.auth.accessToken) {
     }, ...__VLS_functionalComponentArgsRest(__VLS_1));
     __VLS_3.slots.default;
     var __VLS_3;
+    const __VLS_4 = {}.RouterLink;
+    /** @type {[typeof __VLS_components.RouterLink, typeof __VLS_components.RouterLink, ]} */ ;
+    // @ts-ignore
+    const __VLS_5 = __VLS_asFunctionalComponent(__VLS_4, new __VLS_4({
+        to: ({ name: 'search' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }));
+    const __VLS_6 = __VLS_5({
+        to: ({ name: 'search' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }, ...__VLS_functionalComponentArgsRest(__VLS_5));
+    __VLS_7.slots.default;
+    var __VLS_7;
+    const __VLS_8 = {}.RouterLink;
+    /** @type {[typeof __VLS_components.RouterLink, typeof __VLS_components.RouterLink, ]} */ ;
+    // @ts-ignore
+    const __VLS_9 = __VLS_asFunctionalComponent(__VLS_8, new __VLS_8({
+        to: ({ name: 'dashboard' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }));
+    const __VLS_10 = __VLS_9({
+        to: ({ name: 'dashboard' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }, ...__VLS_functionalComponentArgsRest(__VLS_9));
+    __VLS_11.slots.default;
+    var __VLS_11;
+    const __VLS_12 = {}.RouterLink;
+    /** @type {[typeof __VLS_components.RouterLink, typeof __VLS_components.RouterLink, ]} */ ;
+    // @ts-ignore
+    const __VLS_13 = __VLS_asFunctionalComponent(__VLS_12, new __VLS_12({
+        to: ({ name: 'departments' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }));
+    const __VLS_14 = __VLS_13({
+        to: ({ name: 'departments' }),
+        ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+        activeClass: "text-slate-800 font-medium",
+    }, ...__VLS_functionalComponentArgsRest(__VLS_13));
+    __VLS_15.slots.default;
+    var __VLS_15;
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "flex items-center gap-4 text-sm text-slate-500" },
     });
@@ -49,8 +97,20 @@ if (__VLS_ctx.auth.accessToken) {
 /** @type {__VLS_StyleScopedClasses['justify-between']} */ ;
 /** @type {__VLS_StyleScopedClasses['px-6']} */ ;
 /** @type {__VLS_StyleScopedClasses['py-3']} */ ;
+/** @type {__VLS_StyleScopedClasses['flex']} */ ;
+/** @type {__VLS_StyleScopedClasses['items-center']} */ ;
+/** @type {__VLS_StyleScopedClasses['gap-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['font-semibold']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-800']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['hover:text-slate-800']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['hover:text-slate-800']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['hover:text-slate-800']} */ ;
 /** @type {__VLS_StyleScopedClasses['flex']} */ ;
 /** @type {__VLS_StyleScopedClasses['items-center']} */ ;
 /** @type {__VLS_StyleScopedClasses['gap-4']} */ ;

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from app.models.enums import EmploymentStatus, Gender, MaritalStatus
 from app.schemas.award import AwardRead
 from app.schemas.base import ORMBase
+from app.schemas.document_attachment import DocumentAttachmentRead
 from app.schemas.education_history import EducationHistoryRead
 from app.schemas.foreign_trip import ForeignTripRead
 from app.schemas.position import PositionRead
@@ -172,6 +173,7 @@ class EmployeeDetailRead(EmployeeRead):
     work_history: list[WorkHistoryRead] = Field(default_factory=list)
     awards: list[AwardRead] = Field(default_factory=list)
     foreign_trips: list[ForeignTripRead] = Field(default_factory=list)
+    attachments: list[DocumentAttachmentRead] = Field(default_factory=list)
 
 
 class EmployeeSensitiveRead(BaseModel):

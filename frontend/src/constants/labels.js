@@ -28,3 +28,9 @@ export const EDUCATION_LEVEL_LABELS = {
     master: 'Magistr',
     phd: "Fan doktori/nomzodi",
 };
+export const ATTACHMENT_TYPE_LABELS = {
+    diplom: 'Diplom',
+    pasport: 'Pasport nusxasi',
+    fotosurat: 'Fotosurat',
+    boshqa: 'Boshqa hujjat',
+};

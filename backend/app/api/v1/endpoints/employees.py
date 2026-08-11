@@ -1,23 +1,27 @@
-from typing import TypeVar
+from typing import Annotated, TypeVar
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile, status
+from fastapi.responses import FileResponse
 
 from app.api.v1.deps import AdminUser, CurrentUser, DbSession, EditorUser, client_ip
 from app.core.database import Base
 from app.core.security import decrypt_field
 from app.crud.award import award_crud
+from app.crud.document_attachment import document_attachment_crud
 from app.crud.education_history import education_history_crud
 from app.crud.employee import employee_crud
 from app.crud.foreign_trip import foreign_trip_crud
 from app.crud.relative import relative_crud
 from app.crud.work_history import work_history_crud
 from app.models.award import Award
+from app.models.document_attachment import DocumentAttachment
 from app.models.education_history import EducationHistory
 from app.models.employee import Employee
 from app.models.foreign_trip import ForeignTrip
 from app.models.relative import Relative
 from app.models.work_history import WorkHistory
 from app.schemas.award import AwardCreate, AwardRead, AwardUpdate
+from app.schemas.document_attachment import DocumentAttachmentRead
 from app.schemas.education_history import EducationHistoryCreate, EducationHistoryRead, EducationHistoryUpdate
 from app.schemas.employee import (
     EmployeeCreate,
@@ -30,6 +34,7 @@ from app.schemas.foreign_trip import ForeignTripCreate, ForeignTripRead, Foreign
 from app.schemas.relative import RelativeCreate, RelativeRead, RelativeUpdate
 from app.schemas.work_history import WorkHistoryCreate, WorkHistoryRead, WorkHistoryUpdate
 from app.services.audit_service import model_snapshot, record_audit
+from app.services.file_storage import UploadValidationError, delete_attachment_file, resolve_stored_path, save_attachment
 
 router = APIRouter()
 
@@ -335,3 +340,100 @@ async def delete_foreign_trip(employee_id: int, trip_id: int, db: DbSession, cur
     record = await _get_owned_or_404(db, ForeignTrip, trip_id, employee_id)
     await foreign_trip_crud.remove(db, db_obj=record)
     await db.commit()
+
+
+# ---- Biriktirilgan hujjatlar (diplom, pasport skani, fotosurat va h.k.) ----
+# Ro'yxat uchun alohida GET yo'q — boshqa bola-resurslar kabi EmployeeDetailRead'ning
+# o'zida keladi (crud/employee.py'dagi _DETAIL_RELATIONSHIPS). Faqat yozish/yuklab olish
+# amallari (JSON emas, fayl oqimi) shu yerda alohida endpoint sifatida beriladi.
+
+
+@router.post(
+    "/{employee_id}/attachments", response_model=DocumentAttachmentRead, status_code=status.HTTP_201_CREATED
+)
+async def upload_attachment(
+    employee_id: int,
+    request: Request,
+    db: DbSession,
+    current_user: EditorUser,
+    file: Annotated[UploadFile, File()],
+    file_type: Annotated[str, Form()],
+) -> DocumentAttachment:
+    await _get_employee_or_404(db, employee_id)
+
+    try:
+        relative_path, size_bytes, content_type = await save_attachment(employee_id, file)
+    except UploadValidationError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from None
+
+    attachment = await document_attachment_crud.create(
+        db,
+        obj_in={
+            "employee_id": employee_id,
+            "file_type": file_type.strip()[:50] or "boshqa",
+            "original_filename": (file.filename or "fayl")[:255],
+            "stored_path": relative_path,
+            "content_type": content_type,
+            "size_bytes": size_bytes,
+            "uploaded_by_id": current_user.id,
+        },
+    )
+    await record_audit(
+        db,
+        user_id=current_user.id,
+        action="upload_document",
+        table_name="document_attachments",
+        record_id=attachment.id,
+        new_values={"original_filename": attachment.original_filename, "file_type": attachment.file_type},
+        ip_address=client_ip(request),
+    )
+    await db.commit()
+    return attachment
+
+
+@router.get("/{employee_id}/attachments/{attachment_id}/download")
+async def download_attachment(
+    employee_id: int, attachment_id: int, request: Request, db: DbSession, current_user: CurrentUser
+) -> FileResponse:
+    attachment = await _get_owned_or_404(db, DocumentAttachment, attachment_id, employee_id)
+    path = resolve_stored_path(attachment.stored_path)
+    if not path.exists():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fayl serverda topilmadi")
+
+    await record_audit(
+        db,
+        user_id=current_user.id,
+        action="download_document",
+        table_name="document_attachments",
+        record_id=attachment.id,
+        ip_address=client_ip(request),
+    )
+    await db.commit()
+
+    safe_name = "".join(c for c in attachment.original_filename if c.isalnum() or c in " ._-").strip() or "fayl"
+    return FileResponse(path, media_type=attachment.content_type, filename=safe_name)
+
+
+@router.delete("/{employee_id}/attachments/{attachment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_attachment(
+    employee_id: int, attachment_id: int, request: Request, db: DbSession, current_user: EditorUser
+) -> None:
+    attachment = await _get_owned_or_404(db, DocumentAttachment, attachment_id, employee_id)
+    stored_path = attachment.stored_path
+
+    await record_audit(
+        db,
+        user_id=current_user.id,
+        action="delete_document",
+        table_name="document_attachments",
+        record_id=attachment.id,
+        old_values={"original_filename": attachment.original_filename, "file_type": attachment.file_type},
+        ip_address=client_ip(request),
+    )
+    await document_attachment_crud.remove(db, db_obj=attachment)
+    await db.commit()
+
+    # DB yozuvi commit qilingandan KEYIN faylni o'chiramiz — aks holda fayl o'chib, DB
+    # yozuvi qolib ketsa, keyingi yuklab olish urinishi "topilmadi" bilan buziladi;
+    # teskari tartibda eng yomon holat faqat egasiz fayl qoldirish (zararsiz).
+    await delete_attachment_file(stored_path)

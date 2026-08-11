@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth';
+import { isAxiosError } from 'axios';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 const username = ref('');
@@ -14,8 +15,27 @@ async function handleSubmit() {
         await auth.login(username.value, password.value);
         router.push({ name: 'search' });
     }
-    catch {
-        error.value = "Login yoki parol noto'g'ri";
+    catch (err) {
+        // Tarmoq/CORS xatosini noto'g'ri parol xabaridan ataylab ajratamiz — aks holda
+        // masalan "serverga umuman ulanib bo'lmayapti" holati "parol noto'g'ri" deb
+        // ko'rsatilib, haqiqiy sababni topishni qiyinlashtiradi.
+        if (isAxiosError(err)) {
+            if (!err.response) {
+                error.value = "Serverga ulanib bo'lmadi. Backend ishga tushirilganini tekshiring.";
+            }
+            else if (err.response.status === 423) {
+                error.value = "Hisob vaqtincha bloklangan — birozdan so'ng qayta urinib ko'ring.";
+            }
+            else if (err.response.status === 429) {
+                error.value = "Juda ko'p urinish qilindi. Birozdan so'ng qayta urinib ko'ring.";
+            }
+            else {
+                error.value = "Login yoki parol noto'g'ri";
+            }
+        }
+        else {
+            error.value = "Kutilmagan xatolik yuz berdi";
+        }
     }
     finally {
         loading.value = false;

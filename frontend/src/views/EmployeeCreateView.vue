@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { listPositions } from '@/api/departments'
 import { createEmployee } from '@/api/employees'
+import PositionSelect from '@/components/PositionSelect.vue'
 import { GENDER_LABELS } from '@/constants/labels'
-import type { EmployeeInput, PositionReadWithDepartment } from '@/types/employee'
-import { onMounted, ref } from 'vue'
+import type { EmployeeInput } from '@/types/employee'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const positions = ref<PositionReadWithDepartment[]>([])
 const saving = ref(false)
 const error = ref('')
 
@@ -23,10 +22,6 @@ const form = ref<EmployeeInput>({
   citizenship: "O'zbekiston Respublikasi",
   position_id: null,
   employment_status: 'active',
-})
-
-onMounted(async () => {
-  positions.value = await listPositions()
 })
 
 async function submit() {
@@ -69,10 +64,7 @@ async function submit() {
       <div><label class="mb-1 block text-xs text-slate-600">Fuqaroligi</label><input v-model="form.citizenship" class="w-full rounded border px-2 py-1.5 text-sm" /></div>
       <div>
         <label class="mb-1 block text-xs text-slate-600">Lavozimi</label>
-        <select v-model="form.position_id" class="w-full rounded border px-2 py-1.5 text-sm">
-          <option :value="null">—</option>
-          <option v-for="p in positions" :key="p.id" :value="p.id">{{ p.department.name }} — {{ p.title }}</option>
-        </select>
+        <PositionSelect v-model="form.position_id" />
       </div>
 
       <div class="sm:col-span-3"><label class="mb-1 block text-xs text-slate-600">PINFL (14 xonali, ixtiyoriy)</label><input v-model="form.pinfl" maxlength="14" class="w-full rounded border px-2 py-1.5 text-sm" /></div>
