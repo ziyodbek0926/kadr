@@ -23,12 +23,19 @@ backend/uploads/
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+# vue-tsc noEmit=true bo'lgani uchun bular endi generatsiya qilinmasligi kerak — shu bilan
+# birga, tasodifan qayta paydo bo'lib qolsa (masalan eski tsconfig bilan) commit qilinmasin
+frontend/src/**/*.js
 
 # Desktop (Tauri)
 desktop/src-tauri/target/
 desktop/src-tauri/gen/
 desktop/node_modules/
 desktop/dist/
+# Standalone o'rnatuvchi uchun vendorlangan ikkilik komponentlar (ko'chma Python +
+# PostgreSQL, ~yuzlab MB) — git'ga emas, desktop/scripts/vendor-*.ps1 orqali qurish
+# vaqtida yuklab olinadi
+desktop/src-tauri/vendor/
 
 # IDE / OS
 .vscode/

@@ -22,4 +22,20 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Standalone rejim orkestratori (desktop/src-tauri/src/orchestrator/) uchun:
+ureq = "2"          # backend /health so'rovi — yengil, sinxron (alohida oqimda ishlatiladi)
+# Tauri'ning resource_dir() ba'zan `\\?\`-prefiksli uzun-yo'l (UNC extended-length)
+# formatida qaytaradi — initdb.exe/postgres.exe kabi C dasturlari argv[0]'dan "shu
+# papkadagi qo'shni dastur"ni qidirishda bu formatni to'g'ri qayta ololmay, "postgres
+# topilmadi" deb xato beradi (haqiqatan ham shu xatoga duch kelindi). `dunce` xavfsiz
+# bo'lganda shu prefiksni olib tashlaydi.
+dunce = "1"
+
+[target.'cfg(windows)'.dependencies]
+win32job = "2"       # asosiy .exe qulasa ham postgres.exe/python.exe yetim qolmasligi uchun
+# `msgbox` GTK 0.15'ga bog'liq va Tauri'ning o'zi talab qiladigan GTK 0.18 bilan
+# to'qnashadi (ikkalasi ham `gtk-3` native kutubxonasiga bog'lanadi) — shu sabab
+# kross-platforma emas, faqat Windows'ning o'z MessageBoxW'ini to'g'ridan-to'g'ri
+# chaqiramiz (bu loyiha faqat Win10/11 uchun, kross-platforma kerak emas).
+windows = { version = "0.58", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation"] }
 

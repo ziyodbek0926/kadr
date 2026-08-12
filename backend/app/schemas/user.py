@@ -9,6 +9,15 @@ from app.schemas.role import RoleRead
 USERNAME_PATTERN = r"^[a-zA-Z0-9_.]+$"
 
 
+def validate_password_strength(v: str) -> str:
+    has_upper = any(c.isupper() for c in v)
+    has_lower = any(c.islower() for c in v)
+    has_digit = any(c.isdigit() for c in v)
+    if not (has_upper and has_lower and has_digit):
+        raise ValueError("Parolda kamida bitta katta harf, kichik harf va raqam bo'lishi shart")
+    return v
+
+
 class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=50, pattern=USERNAME_PATTERN)
     password: str = Field(min_length=10, max_length=128)
@@ -19,12 +28,7 @@ class UserCreate(BaseModel):
     @field_validator("password")
     @classmethod
     def password_strength(cls, v: str) -> str:
-        has_upper = any(c.isupper() for c in v)
-        has_lower = any(c.islower() for c in v)
-        has_digit = any(c.isdigit() for c in v)
-        if not (has_upper and has_lower and has_digit):
-            raise ValueError("Parolda kamida bitta katta harf, kichik harf va raqam bo'lishi shart")
-        return v
+        return validate_password_strength(v)
 
 
 class UserUpdate(BaseModel):
@@ -40,12 +44,7 @@ class PasswordChange(BaseModel):
     @field_validator("new_password")
     @classmethod
     def password_strength(cls, v: str) -> str:
-        has_upper = any(c.isupper() for c in v)
-        has_lower = any(c.islower() for c in v)
-        has_digit = any(c.isdigit() for c in v)
-        if not (has_upper and has_lower and has_digit):
-            raise ValueError("Parolda kamida bitta katta harf, kichik harf va raqam bo'lishi shart")
-        return v
+        return validate_password_strength(v)
 
 
 class UserRead(ORMBase):

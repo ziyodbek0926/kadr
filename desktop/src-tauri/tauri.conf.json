@@ -33,6 +33,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "vendor/pyruntime/**/*",
+      "vendor/pgsql/**/*",
+      "vendor/backend/**/*"
+    ],
     "windows": {
       "webviewInstallMode": {
         "type": "downloadBootstrapper"
