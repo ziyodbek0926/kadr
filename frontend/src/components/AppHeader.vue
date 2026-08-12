@@ -25,6 +25,14 @@ async function logout() {
         <RouterLink :to="{ name: 'departments' }" class="text-sm text-slate-500 hover:text-slate-800" active-class="text-slate-800 font-medium">
           Bo'limlar
         </RouterLink>
+        <RouterLink
+          v-if="auth.isSuperAdmin"
+          :to="{ name: 'users' }"
+          class="text-sm text-slate-500 hover:text-slate-800"
+          active-class="text-slate-800 font-medium"
+        >
+          Foydalanuvchilar
+        </RouterLink>
       </nav>
       <div class="flex items-center gap-4 text-sm text-slate-500">
         <span>{{ auth.username }}</span>

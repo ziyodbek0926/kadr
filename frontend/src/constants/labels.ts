@@ -1,4 +1,4 @@
-import type { EducationLevel, EmploymentStatus, Gender, MaritalStatus, RelativeType } from '@/types/employee'
+import type { EducationLevel, EmploymentStatus, Gender, MaritalStatus, RelativeType, UserRoleCode } from '@/types/employee'
 
 export const GENDER_LABELS: Record<Gender, string> = {
   male: 'Erkak',
@@ -40,4 +40,11 @@ export const ATTACHMENT_TYPE_LABELS: Record<string, string> = {
   pasport: 'Pasport nusxasi',
   fotosurat: 'Fotosurat',
   boshqa: 'Boshqa hujjat',
+}
+
+export const USER_ROLE_LABELS: Record<UserRoleCode, string> = {
+  super_admin: 'SuperAdmin',
+  hr_operator: "Kadrlar bo'limi xodimi",
+  management_viewer: 'Rahbariyat',
+  it_admin: 'IT-administrator',
 }

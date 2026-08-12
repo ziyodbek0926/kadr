@@ -8,8 +8,6 @@ from fastapi import UploadFile
 
 from app.core.config import settings
 
-# Kengaytma -> ruxsat etilgan MIME turlari. Ikkalasi ham tekshiriladi (nafaqat kengaytma) —
-# biri boshqasiga mos kelmasa, fayl rad etiladi.
 ALLOWED_CONTENT_TYPES: dict[str, set[str]] = {
     ".pdf": {"application/pdf"},
     ".jpg": {"image/jpeg"},

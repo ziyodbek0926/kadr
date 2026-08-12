@@ -28,7 +28,7 @@ const sensitive = ref<EmployeeSensitiveRead | null>(null)
 const sensitiveLoading = ref(false)
 
 const canEdit = computed(() => auth.canEdit)
-const canDelete = computed(() => auth.role === 'super_admin')
+const canDelete = computed(() => auth.isSuperAdmin)
 
 const form = ref<EmployeeInput>(blankForm())
 

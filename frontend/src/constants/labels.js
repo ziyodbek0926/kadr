@@ -34,3 +34,9 @@ export const ATTACHMENT_TYPE_LABELS = {
     fotosurat: 'Fotosurat',
     boshqa: 'Boshqa hujjat',
 };
+export const USER_ROLE_LABELS = {
+    super_admin: 'SuperAdmin',
+    hr_operator: "Kadrlar bo'limi xodimi",
+    management_viewer: 'Rahbariyat',
+    it_admin: 'IT-administrator',
+};

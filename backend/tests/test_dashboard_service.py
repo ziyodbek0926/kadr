@@ -19,9 +19,9 @@ def test_highest_education_level_single_value() -> None:
 
 def test_age_bucket_boundaries() -> None:
     today = date(2026, 8, 11)
-    assert age_bucket(date(2000, 8, 12), today) == "<30"  # ertaga 26 yosh to'ladi -> hali 25
-    assert age_bucket(date(1996, 8, 11), today) == "30-39"  # aynan bugun 30 to'ladi
-    assert age_bucket(date(1996, 8, 12), today) == "<30"  # ertaga 30 to'ladi -> hali 29
+    assert age_bucket(date(2000, 8, 12), today) == "<30"  
+    assert age_bucket(date(1996, 8, 11), today) == "30-39"  
+    assert age_bucket(date(1996, 8, 12), today) == "<30"  
     assert age_bucket(date(1966, 1, 1), today) == "60+"
 
 

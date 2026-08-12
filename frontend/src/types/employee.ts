@@ -145,8 +145,6 @@ export interface EmployeeSensitiveRead {
   passport_number: string | null
 }
 
-// Backend'dagi app.schemas.employee.EmployeeBase bilan mos (Create va Update ikkalasi
-// uchun ham ishlatiladi — Update'da barcha maydonlar amalda ixtiyoriy).
 export interface EmployeeInput {
   last_name: string
   first_name: string
@@ -182,8 +180,6 @@ export interface EmployeeInput {
   negative_traits?: string | null
 }
 
-// Backend'dagi app.schemas.search.EmployeeSearchFilter bilan mos — maydon nomlari va
-// turlari ataylab bir xil ushlab turiladi, aks holda backend 422 (extra="forbid") qaytaradi.
 export interface EmployeeSearchFilter {
   full_name?: string
   department_id?: number
@@ -209,6 +205,32 @@ export interface EmployeeSearchResult {
   page: number
   page_size: number
   items: EmployeeListItem[]
+}
+
+export type UserRoleCode = 'super_admin' | 'hr_operator' | 'management_viewer' | 'it_admin'
+
+export interface RoleRead {
+  id: number
+  code: UserRoleCode
+  display_name: string
+}
+
+export interface UserRead {
+  id: number
+  username: string
+  full_name: string
+  role: RoleRead
+  is_active: boolean
+  last_login_at: string | null
+  created_at: string
+}
+
+export interface UserCreateInput {
+  username: string
+  password: string
+  full_name: string
+  role_code: UserRoleCode
+  employee_id?: number | null
 }
 
 export interface LabelCount {

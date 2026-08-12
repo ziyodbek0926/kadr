@@ -16,9 +16,6 @@ async function handleSubmit() {
         router.push({ name: 'search' });
     }
     catch (err) {
-        // Tarmoq/CORS xatosini noto'g'ri parol xabaridan ataylab ajratamiz — aks holda
-        // masalan "serverga umuman ulanib bo'lmayapti" holati "parol noto'g'ri" deb
-        // ko'rsatilib, haqiqiy sababni topishni qiyinlashtiradi.
         if (isAxiosError(err)) {
             if (!err.response) {
                 error.value = "Serverga ulanib bo'lmadi. Backend ishga tushirilganini tekshiring.";

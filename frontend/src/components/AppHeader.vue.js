@@ -78,6 +78,23 @@ if (__VLS_ctx.auth.accessToken) {
     }, ...__VLS_functionalComponentArgsRest(__VLS_13));
     __VLS_15.slots.default;
     var __VLS_15;
+    if (__VLS_ctx.auth.isSuperAdmin) {
+        const __VLS_16 = {}.RouterLink;
+        /** @type {[typeof __VLS_components.RouterLink, typeof __VLS_components.RouterLink, ]} */ ;
+        // @ts-ignore
+        const __VLS_17 = __VLS_asFunctionalComponent(__VLS_16, new __VLS_16({
+            to: ({ name: 'users' }),
+            ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+            activeClass: "text-slate-800 font-medium",
+        }));
+        const __VLS_18 = __VLS_17({
+            to: ({ name: 'users' }),
+            ...{ class: "text-sm text-slate-500 hover:text-slate-800" },
+            activeClass: "text-slate-800 font-medium",
+        }, ...__VLS_functionalComponentArgsRest(__VLS_17));
+        __VLS_19.slots.default;
+        var __VLS_19;
+    }
     __VLS_asFunctionalElement(__VLS_intrinsicElements.div, __VLS_intrinsicElements.div)({
         ...{ class: "flex items-center gap-4 text-sm text-slate-500" },
     });
@@ -102,6 +119,9 @@ if (__VLS_ctx.auth.accessToken) {
 /** @type {__VLS_StyleScopedClasses['gap-5']} */ ;
 /** @type {__VLS_StyleScopedClasses['font-semibold']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-800']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
+/** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
+/** @type {__VLS_StyleScopedClasses['hover:text-slate-800']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-sm']} */ ;
 /** @type {__VLS_StyleScopedClasses['text-slate-500']} */ ;
 /** @type {__VLS_StyleScopedClasses['hover:text-slate-800']} */ ;

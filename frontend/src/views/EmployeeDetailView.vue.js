@@ -22,7 +22,7 @@ const error = ref('');
 const sensitive = ref(null);
 const sensitiveLoading = ref(false);
 const canEdit = computed(() => auth.canEdit);
-const canDelete = computed(() => auth.role === 'super_admin');
+const canDelete = computed(() => auth.isSuperAdmin);
 const form = ref(blankForm());
 function blankForm() {
     return {

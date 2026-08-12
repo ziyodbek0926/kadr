@@ -19,8 +19,6 @@ _STATUS_LABELS = {
     EmploymentStatus.DISMISSED: "Bo'shatilgan",
 }
 
-# Eng past darajadan eng yuqorisiga — bitta xodimning bir nechta ta'lim yozuvidan
-# "eng yuqori darajasi"ni aniqlash uchun tartib shu ro'yxatdagi indeks bo'yicha solishtiriladi.
 _EDUCATION_ORDER = [
     EducationLevel.SECONDARY,
     EducationLevel.SECONDARY_SPECIAL,
@@ -71,8 +69,6 @@ async def get_dashboard_stats(db: AsyncSession) -> DashboardStats:
     gender_rows = (
         await db.execute(select(Employee.gender, func.count(Employee.id)).where(not_deleted).group_by(Employee.gender))
     ).all()
-    # dict(gender_rows) o'rniga comprehension: SQLAlchemy Row mypy uchun Iterable[tuple[K, V]]
-    # sifatida tanilmaydi — dict() to'g'ridan-to'g'ri chaqirilsa mypy arg-type xatosi beradi.
     gender_counts: dict[Gender, int] = {g: c for g, c in gender_rows}  # noqa: C416
     by_gender = [LabelCount(label=label, count=gender_counts.get(g, 0)) for g, label in _GENDER_LABELS.items()]
 

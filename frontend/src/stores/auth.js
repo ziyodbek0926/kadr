@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
     }),
     getters: {
         canEdit: (state) => state.role === 'super_admin' || state.role === 'hr_operator',
+        isSuperAdmin: (state) => state.role === 'super_admin',
     },
     actions: {
         async login(username, password) {
