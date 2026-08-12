@@ -14,3 +14,7 @@ export async function createUser(payload: UserCreateInput): Promise<UserRead> {
 export async function deactivateUser(id: number): Promise<void> {
   await apiClient.patch(`/users/${id}/deactivate`)
 }
+
+export async function changeMyPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.patch('/users/me/password', { current_password: currentPassword, new_password: newPassword })
+}

@@ -36,6 +36,9 @@ async function logout() {
       </nav>
       <div class="flex items-center gap-4 text-sm text-slate-500">
         <span>{{ auth.username }}</span>
+        <RouterLink :to="{ name: 'change-password' }" class="hover:text-slate-800 hover:underline">
+          Parolni almashtirish
+        </RouterLink>
         <button class="text-slate-500 hover:text-slate-800 hover:underline" @click="logout">Chiqish</button>
       </div>
     </div>

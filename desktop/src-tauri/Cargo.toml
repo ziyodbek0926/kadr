@@ -37,5 +37,9 @@ win32job = "2"       # asosiy .exe qulasa ham postgres.exe/python.exe yetim qolm
 # to'qnashadi (ikkalasi ham `gtk-3` native kutubxonasiga bog'lanadi) — shu sabab
 # kross-platforma emas, faqat Windows'ning o'z MessageBoxW'ini to'g'ridan-to'g'ri
 # chaqiramiz (bu loyiha faqat Win10/11 uchun, kross-platforma kerak emas).
-windows = { version = "0.58", features = ["Win32_UI_WindowsAndMessaging", "Win32_Foundation"] }
+windows = { version = "0.58", features = [
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Foundation",
+    "Win32_System_Threading",
+] }
 

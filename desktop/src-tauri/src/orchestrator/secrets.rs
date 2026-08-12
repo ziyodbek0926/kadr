@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 #[cfg(windows)]
 use std::os::windows::process::CommandExt;
@@ -46,6 +46,7 @@ pub fn load_or_generate(secrets_file: &Path, python_exe: &Path) -> Result<Secret
     cmd.arg("-c").arg(GENERATE_SCRIPT);
     #[cfg(windows)]
     cmd.creation_flags(CREATE_NO_WINDOW);
+    cmd.stdin(Stdio::null());
 
     let output = cmd
         .output()

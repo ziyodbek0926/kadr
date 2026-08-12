@@ -54,7 +54,10 @@ pub fn run_bootstrap(env: &BackendEnv, secret_key: &str, field_encryption_key: &
     }
     cmd.env("SECRET_KEY", secret_key);
     cmd.env("FIELD_ENCRYPTION_KEY", field_encryption_key);
-    cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
+    // GUI-subsystem ilovada meros qilingan stdin yaroqsiz — Python/uvicorn shu holatda
+    // o'qishga urinib to'xtab qolmasligi uchun aniq yopiladi (postgres.rs'dagi xuddi
+    // shu izohga q. — real sinovda pg_ctl ANIQ shu sababdan cheksiz osilib qolgan edi).
+    cmd.stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
 
     let output = cmd.output().map_err(|e| format!("bootstrap ishga tushmadi: {e}"))?;
     if !output.status.success() {
@@ -92,7 +95,9 @@ pub fn spawn_server(
     }
     cmd.env("SECRET_KEY", secret_key);
     cmd.env("FIELD_ENCRYPTION_KEY", field_encryption_key);
-    cmd.stdout(Stdio::from(log_out)).stderr(Stdio::from(log_err));
+    cmd.stdin(Stdio::null())
+        .stdout(Stdio::from(log_out))
+        .stderr(Stdio::from(log_err));
 
     cmd.spawn().map_err(|e| format!("backend ishga tushmadi: {e}"))
 }

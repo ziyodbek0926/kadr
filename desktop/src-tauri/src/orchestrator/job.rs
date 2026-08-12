@@ -32,6 +32,28 @@ impl ProcessGuard {
             .assign_process(child.as_raw_handle() as _)
             .map_err(|e| format!("jarayon Job Object'ga biriktirilmadi: {e}"))
     }
+
+    /// `postgres.exe` uchun — unga Rust'ning o'zi `Child` sifatida spawn qilmagani
+    /// sababli (`postgres.rs`dagi izohga q. — to'g'ridan-to'g'ri spawn qilish
+    /// Administrator tekshiruviga uchraydi), PID orqali vaqtinchalik tutqich ochib,
+    /// Job Object'ga biriktiramiz, so'ng shu tutqichning o'zini yopamiz (biriktirish
+    /// doimiy — Job o'z ichida kuzatib turadi, mahalliy tutqichni ushlab turish shart
+    /// emas).
+    pub fn assign_pid(&self, pid: u32) -> Result<(), String> {
+        use windows::Win32::Foundation::CloseHandle;
+        use windows::Win32::System::Threading::{OpenProcess, PROCESS_SET_QUOTA, PROCESS_TERMINATE};
+
+        unsafe {
+            let handle = OpenProcess(PROCESS_SET_QUOTA | PROCESS_TERMINATE, false, pid)
+                .map_err(|e| format!("postgres jarayoniga (PID {pid}) tutqich ochilmadi: {e}"))?;
+            let result = self
+                .job
+                .assign_process(handle.0 as _)
+                .map_err(|e| format!("postgres Job Object'ga biriktirilmadi: {e}"));
+            let _ = CloseHandle(handle);
+            result
+        }
+    }
 }
 
 #[cfg(not(windows))]
@@ -44,6 +66,10 @@ impl ProcessGuard {
     }
 
     pub fn assign(&self, _child: &std::process::Child) -> Result<(), String> {
+        Ok(())
+    }
+
+    pub fn assign_pid(&self, _pid: u32) -> Result<(), String> {
         Ok(())
     }
 }
